@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Save, Database, Cpu, Key, RefreshCw } from 'lucide-react';
+import { Save, Database, Cpu, Key, RefreshCw, Shield, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SettingsData {
@@ -29,10 +29,62 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Claude auth state
+  const [claudeAuth, setClaudeAuth] = useState<{
+    installed: boolean;
+    version: string | null;
+    authenticated: boolean;
+    error?: string;
+  } | null>(null);
+  const [authToken, setAuthToken] = useState('');
+  const [authSaving, setAuthSaving] = useState(false);
+  const [authChecking, setAuthChecking] = useState(false);
+
   // Form state
   const [engine, setEngine] = useState<'claude-code' | 'anthropic-api'>('claude-code');
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('claude-sonnet-4-5-20250929');
+
+  const checkClaudeAuth = async () => {
+    setAuthChecking(true);
+    try {
+      const res = await fetch('/api/settings/claude-auth');
+      if (res.ok) {
+        setClaudeAuth(await res.json());
+      }
+    } catch {
+      // ignore
+    } finally {
+      setAuthChecking(false);
+    }
+  };
+
+  const handleSetupToken = async () => {
+    if (!authToken.trim()) {
+      toast.error('Paste your credentials token first');
+      return;
+    }
+    setAuthSaving(true);
+    try {
+      const res = await fetch('/api/settings/claude-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: authToken.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Claude CLI authenticated');
+        setAuthToken('');
+        checkClaudeAuth();
+      } else {
+        toast.error(data.error || 'Authentication failed');
+      }
+    } catch {
+      toast.error('Failed to set up token');
+    } finally {
+      setAuthSaving(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -40,6 +92,7 @@ export default function SettingsPage() {
         const [settingsRes, statsRes] = await Promise.all([
           fetch('/api/settings'),
           fetch('/api/stats'),
+          checkClaudeAuth(),
         ]);
         if (settingsRes.ok) {
           const data: SettingsData = await settingsRes.json();
@@ -216,6 +269,99 @@ export default function SettingsPage() {
             </Button>
           </div>
         </Card>
+
+        {/* Claude CLI Authentication */}
+        {engine === 'claude-code' && (
+          <Card className="border-[#1e1e2e] bg-[#12121a] p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#d4a574]/10">
+                <Shield className="w-4 h-4 text-[#d4a574]" />
+              </span>
+              <h2 className="text-sm font-semibold text-[#e2e0ef]">
+                Claude CLI Authentication
+              </h2>
+              {claudeAuth && (
+                <span className="ml-auto flex items-center gap-1.5">
+                  {claudeAuth.authenticated ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#6ab4a0]" />
+                      <span className="text-[11px] text-[#6ab4a0]">Connected</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="w-3.5 h-3.5 text-[#c27878]" />
+                      <span className="text-[11px] text-[#c27878]">Not authenticated</span>
+                    </>
+                  )}
+                </span>
+              )}
+            </div>
+
+            {claudeAuth?.installed && (
+              <p className="text-[11px] text-[#e2e0ef]/25 mb-3">
+                {claudeAuth.version}
+              </p>
+            )}
+
+            {claudeAuth?.authenticated ? (
+              <div className="rounded-lg bg-[#6ab4a0]/5 border border-[#6ab4a0]/10 px-3 py-2.5">
+                <p className="text-xs text-[#6ab4a0]/80">
+                  Claude CLI is authenticated and ready for entity extraction.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-[11px] text-[#e2e0ef]/30 leading-relaxed">
+                  Paste your Claude credentials token to authenticate the CLI.
+                  On your local machine, run:
+                </p>
+                <code className="block text-[11px] text-[#d4a574] bg-[#0a0a0f] rounded-lg px-3 py-2 font-mono break-all">
+                  security find-generic-password -s &quot;Claude Code-credentials&quot; -a &quot;$(whoami)&quot; -w
+                </code>
+                <div>
+                  <label className="text-[11px] uppercase tracking-wider text-[#e2e0ef]/30 font-medium mb-2 flex items-center gap-1.5">
+                    <Key className="w-3 h-3" />
+                    Credentials Token
+                  </label>
+                  <textarea
+                    value={authToken}
+                    onChange={(e) => setAuthToken(e.target.value)}
+                    placeholder='{"claudeAiOauth":{"accessToken":"sk-ant-oat01-...","refreshToken":"sk-ant-ort01-..."}}'
+                    rows={3}
+                    className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-xs text-[#e2e0ef] placeholder:text-[#e2e0ef]/10 focus:border-[#8b7ec8]/50 focus:outline-none transition-colors font-mono resize-none"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSetupToken}
+                    disabled={authSaving || !authToken.trim()}
+                    className="bg-[#d4a574]/15 text-[#d4a574] hover:bg-[#d4a574]/25 border-none text-xs"
+                  >
+                    {authSaving ? (
+                      <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
+                    ) : (
+                      <Shield className="w-3 h-3 mr-1.5" />
+                    )}
+                    Authenticate
+                  </Button>
+                  <Button
+                    onClick={checkClaudeAuth}
+                    disabled={authChecking}
+                    variant="outline"
+                    className="border-[#1e1e2e] text-[#e2e0ef]/40 hover:text-[#e2e0ef]/60 hover:bg-[#1e1e2e]/50 text-xs"
+                  >
+                    {authChecking ? (
+                      <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3 mr-1.5" />
+                    )}
+                    Recheck
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Database Stats */}
         {stats && (
