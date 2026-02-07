@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+<img src="public/icon.svg" width="120" height="120" alt="Loreweaver" />
 
-First, run the development server:
+# Loreweaver
+
+**A self-hosted D&D knowledge base that weaves your campaign's story.**
+
+Drop in your session notes and let AI extract characters, factions, locations, items, and more into a searchable, interconnected wiki.
+
+---
+
+</div>
+
+## Features
+
+- **AI Extraction** — Claude-powered entity and relationship extraction from session transcripts
+- **Codex Wiki** — Browse, edit, and interlink every entity in your campaign
+- **Force-Directed Graph** — Visualize connections between characters, factions, locations, and more
+- **Review Queue** — Approve, reject, or edit AI-extracted entities before they enter your canon
+- **Contradiction Detection** — Surface conflicting facts and resolve them side-by-side
+- **Timeline View** — See your campaign's events in chronological order
+- **Global Search** — Cmd+K command palette to find anything instantly
+- **File Watcher** — Drop notes into the `input/` folder and ingestion starts automatically
+
+## Quick Start
 
 ```bash
+# Clone and install
+git clone https://github.com/YourBr0ther/loreweaver.git
+cd loreweaver
+npm install
+
+# Create data directories
+mkdir -p data input
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose up --build
+```
 
-## Learn More
+Volumes mount `./data` (SQLite database) and `./input` (session notes) automatically.
 
-To learn more about Next.js, take a look at the following resources:
+## Usage
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Drop `.txt` or `.md` session notes into the `input/` folder
+2. The ingestion pipeline chunks and extracts entities via Claude
+3. Review extracted entities in the **Review Queue**
+4. Approved entities appear in the **Codex** and **Graph**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+Next.js &middot; TypeScript &middot; Tailwind CSS &middot; shadcn/ui &middot; D3.js &middot; SQLite &middot; Claude AI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

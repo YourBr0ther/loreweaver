@@ -1,0 +1,31 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#0a0a0f"/>
+  <!-- Outer web ring -->
+  <polygon points="32,6 54,19 54,45 32,58 10,45 10,19" stroke="#8b7ec8" stroke-width="0.8" fill="none" opacity="0.3"/>
+  <!-- Inner web ring -->
+  <polygon points="32,14 46,22 46,42 32,50 18,42 18,22" stroke="#8b7ec8" stroke-width="0.6" fill="none" opacity="0.4"/>
+  <!-- Core web ring -->
+  <polygon points="32,22 40,27 40,37 32,42 24,37 24,27" stroke="#8b7ec8" stroke-width="0.5" fill="none" opacity="0.5"/>
+  <!-- Radial threads -->
+  <line x1="32" y1="6" x2="32" y2="58" stroke="#8b7ec8" stroke-width="0.5" opacity="0.25"/>
+  <line x1="10" y1="19" x2="54" y2="45" stroke="#8b7ec8" stroke-width="0.5" opacity="0.25"/>
+  <line x1="54" y1="19" x2="10" y2="45" stroke="#8b7ec8" stroke-width="0.5" opacity="0.25"/>
+  <!-- Spider body -->
+  <ellipse cx="32" cy="30" rx="3.5" ry="4.5" fill="#8b7ec8"/>
+  <circle cx="32" cy="25" r="2.5" fill="#8b7ec8"/>
+  <!-- Spider legs - left -->
+  <path d="M29 26 Q22 20 18 16" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M29 28 Q20 25 14 23" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M29 31 Q20 32 14 35" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M29 33 Q22 38 18 43" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <!-- Spider legs - right -->
+  <path d="M35 26 Q42 20 46 16" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M35 28 Q44 25 50 23" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M35 31 Q44 32 50 35" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M35 33 Q42 38 46 43" stroke="#8b7ec8" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <!-- Spider eyes -->
+  <circle cx="31" cy="24" r="0.8" fill="#e2e0ef"/>
+  <circle cx="33" cy="24" r="0.8" fill="#e2e0ef"/>
+  <!-- Silk thread -->
+  <line x1="32" y1="34" x2="32" y2="50" stroke="#8b7ec8" stroke-width="0.4" opacity="0.5" stroke-dasharray="1.5 1"/>
+</svg>

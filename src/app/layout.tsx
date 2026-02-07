@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Loreweaver",
   description: "D&D Knowledge Base — Weaving your campaign's story",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
