@@ -36,7 +36,9 @@ export function saveCredentials(json: string): { success: boolean; error?: strin
     const dir = join(process.cwd(), 'data');
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
-    writeFileSync(CREDS_PATH, JSON.stringify(parsed, null, 2));
+    // Only keep claudeAiOauth — strip mcpOAuth and anything else
+    const filtered = { claudeAiOauth: parsed.claudeAiOauth };
+    writeFileSync(CREDS_PATH, JSON.stringify(filtered, null, 2));
     return { success: true };
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'Invalid JSON' };
