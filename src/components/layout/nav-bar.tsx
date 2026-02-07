@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { LoreweaverLogo } from './logo';
+import { SearchCommand } from './search-command';
 import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard,
@@ -14,6 +15,7 @@ import {
   AlertCircle,
   Clock,
   Settings,
+  Search,
 } from 'lucide-react';
 
 interface NavItem {
@@ -34,6 +36,19 @@ const navItems: NavItem[] = [
 export function NavBar() {
   const pathname = usePathname();
   const [pendingCount, setPendingCount] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Cmd+K / Ctrl+K keyboard shortcut
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     async function fetchPending() {
@@ -111,6 +126,17 @@ export function NavBar() {
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Search trigger */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-[#e2e0ef]/30 hover:text-[#e2e0ef]/60 hover:bg-[#e2e0ef]/5 transition-colors border border-transparent hover:border-[#1e1e2e]"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Search</span>
+            <kbd className="hidden sm:inline-flex items-center px-1 py-0 rounded text-[10px] font-mono text-[#e2e0ef]/15 bg-[#0a0a0f] border border-[#1e1e2e]">
+              &thinsp;&#8984;K&thinsp;
+            </kbd>
+          </button>
           {pendingCount > 0 && (
             <Link
               href="/review"
@@ -130,6 +156,9 @@ export function NavBar() {
             <Settings className="w-4 h-4" />
           </Link>
         </div>
+
+        {/* Search command palette */}
+        <SearchCommand open={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
 
       {/* Decorative web thread along bottom */}
