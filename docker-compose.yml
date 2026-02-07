@@ -1,0 +1,11 @@
+services:
+  loreweaver:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./input:/app/input
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
