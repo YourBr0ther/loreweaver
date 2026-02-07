@@ -1,5 +1,6 @@
 import { execFile } from 'child_process';
 import { buildExtractionPrompt } from './prompts';
+import { getAccessToken } from './claude-credentials';
 import type { ExtractionResult } from '@/types';
 
 const TIMEOUT_MS = 120_000;
@@ -9,12 +10,20 @@ export async function extractWithClaudeCode(
   existingEntities: string[]
 ): Promise<ExtractionResult> {
   const prompt = buildExtractionPrompt(chunkText, existingEntities);
+  const accessToken = getAccessToken();
 
   return new Promise((resolve, reject) => {
     const child = execFile(
       'claude',
       ['--print', '--output-format', 'text'],
-      { timeout: TIMEOUT_MS, maxBuffer: 1024 * 1024 * 10 },
+      {
+        timeout: TIMEOUT_MS,
+        maxBuffer: 1024 * 1024 * 10,
+        env: {
+          ...process.env,
+          ...(accessToken ? { ANTHROPIC_API_KEY: accessToken } : {}),
+        },
+      },
       (error, stdout, stderr) => {
         if (error) {
           reject(new Error(`Claude Code CLI failed: ${error.message}. stderr: ${stderr}`));

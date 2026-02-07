@@ -34,6 +34,7 @@ export default function SettingsPage() {
     installed: boolean;
     version: string | null;
     authenticated: boolean;
+    subscriptionType?: string | null;
     error?: string;
   } | null>(null);
   const [authToken, setAuthToken] = useState('');
@@ -304,10 +305,30 @@ export default function SettingsPage() {
             )}
 
             {claudeAuth?.authenticated ? (
-              <div className="rounded-lg bg-[#6ab4a0]/5 border border-[#6ab4a0]/10 px-3 py-2.5">
-                <p className="text-xs text-[#6ab4a0]/80">
-                  Claude CLI is authenticated and ready for entity extraction.
-                </p>
+              <div className="space-y-3">
+                <div className="rounded-lg bg-[#6ab4a0]/5 border border-[#6ab4a0]/10 px-3 py-2.5">
+                  <p className="text-xs text-[#6ab4a0]/80">
+                    Claude CLI is authenticated and ready for entity extraction.
+                    {claudeAuth.subscriptionType && (
+                      <Badge className="ml-2 bg-[#8b7ec8]/10 text-[#8b7ec8] border-none text-[9px] capitalize">
+                        {claudeAuth.subscriptionType}
+                      </Badge>
+                    )}
+                  </p>
+                </div>
+                <Button
+                  onClick={checkClaudeAuth}
+                  disabled={authChecking}
+                  variant="outline"
+                  className="border-[#1e1e2e] text-[#e2e0ef]/40 hover:text-[#e2e0ef]/60 hover:bg-[#1e1e2e]/50 text-xs"
+                >
+                  {authChecking ? (
+                    <RefreshCw className="w-3 h-3 mr-1.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3 mr-1.5" />
+                  )}
+                  Recheck
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">

@@ -1,34 +1,16 @@
 import { NextRequest } from 'next/server';
 import { execFile } from 'child_process';
-
-function runClaude(
-  args: string[],
-  stdin?: string
-): Promise<{ stdout: string; stderr: string; error: boolean }> {
-  return new Promise((resolve) => {
-    const child = execFile(
-      'claude',
-      args,
-      { timeout: 15_000, maxBuffer: 1024 * 1024 },
-      (error, stdout, stderr) => {
-        resolve({
-          stdout: stdout ?? '',
-          stderr: stderr ?? '',
-          error: !!error,
-        });
-      }
-    );
-    if (stdin && child.stdin) {
-      child.stdin.write(stdin);
-      child.stdin.end();
-    }
-  });
-}
+import { getCredentials, saveCredentials, getAccessToken } from '@/lib/ai/claude-credentials';
 
 export async function GET() {
-  // Check version
-  const versionResult = await runClaude(['--version']);
-  if (versionResult.error) {
+  // Check if claude CLI is installed
+  const version = await new Promise<string | null>((resolve) => {
+    execFile('claude', ['--version'], { timeout: 10_000 }, (error, stdout) => {
+      resolve(error ? null : stdout.trim());
+    });
+  });
+
+  if (!version) {
     return Response.json({
       installed: false,
       version: null,
@@ -37,21 +19,45 @@ export async function GET() {
     });
   }
 
-  const version = versionResult.stdout.trim();
+  const creds = getCredentials();
+  const accessToken = getAccessToken();
+  const hasToken = !!accessToken;
 
-  // Check auth by running a simple prompt
-  const authResult = await runClaude(
-    ['--print', '--output-format', 'text'],
-    'Say "ok"'
-  );
+  let authenticated = false;
+  let error: string | undefined;
+
+  if (hasToken) {
+    // Verify token works by running a quick prompt
+    authenticated = await new Promise<boolean>((resolve) => {
+      const child = execFile(
+        'claude',
+        ['--print', '--output-format', 'text'],
+        {
+          timeout: 20_000,
+          maxBuffer: 1024 * 1024,
+          env: { ...process.env, ANTHROPIC_API_KEY: accessToken! },
+        },
+        (err) => resolve(!err)
+      );
+      if (child.stdin) {
+        child.stdin.write('Say "ok"');
+        child.stdin.end();
+      }
+    });
+
+    if (!authenticated) {
+      error = 'Token saved but verification failed — it may be expired';
+    }
+  } else {
+    error = 'No credentials configured';
+  }
 
   return Response.json({
     installed: true,
     version,
-    authenticated: !authResult.error,
-    error: authResult.error
-      ? (authResult.stderr || 'Not authenticated').slice(0, 200)
-      : undefined,
+    authenticated,
+    subscriptionType: creds?.claudeAiOauth?.subscriptionType ?? null,
+    error,
   });
 }
 
@@ -65,12 +71,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await runClaude(['setup-token'], token);
+  const result = saveCredentials(token);
 
-  if (result.error) {
+  if (!result.success) {
     return Response.json(
-      { success: false, error: result.stderr || 'setup-token failed' },
-      { status: 500 }
+      { success: false, error: result.error },
+      { status: 400 }
     );
   }
 
