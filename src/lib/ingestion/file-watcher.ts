@@ -2,10 +2,10 @@ import { watch } from 'chokidar';
 import fs from 'fs';
 import path from 'path';
 import { createIngestionQueueItem } from '@/lib/db/queries';
+import { parseFile, getSupportedExtensions } from '@/lib/ingestion/parsers';
 
 const INPUT_DIR = path.join(process.cwd(), 'input');
 const PROCESSED_DIR = path.join(INPUT_DIR, 'processed');
-const SUPPORTED_EXTENSIONS = ['.txt', '.md'];
 
 let watcher: ReturnType<typeof watch> | null = null;
 
@@ -23,12 +23,13 @@ export function startFileWatcher(): void {
     ignored: [PROCESSED_DIR, /(^|[/\\])\./],
   });
 
-  watcher.on('add', (filePath: string) => {
+  watcher.on('add', async (filePath: string) => {
     const ext = path.extname(filePath).toLowerCase();
-    if (!SUPPORTED_EXTENSIONS.includes(ext)) return;
+    if (!getSupportedExtensions().includes(ext)) return;
 
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
+      const buffer = fs.readFileSync(filePath);
+      const content = await parseFile(buffer, ext);
       const filename = path.basename(filePath);
 
       createIngestionQueueItem({

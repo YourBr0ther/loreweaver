@@ -131,12 +131,15 @@ export function IngestionPanel({ queueItems, onRefresh }: IngestionPanelProps) {
           className={`w-8 h-8 mx-auto mb-2 ${isDragOver ? 'text-[#8b7ec8]' : 'text-[#e2e0ef]/25'}`}
         />
         <p className="text-sm text-[#e2e0ef]/50">
-          Drop a .txt or .md file here
+          Drop a file here
+        </p>
+        <p className="text-[10px] text-[#e2e0ef]/30 mt-1">
+          TXT, MD, PDF, DOCX, HTML, JSON
         </p>
         <label className="mt-2 inline-block">
           <input
             type="file"
-            accept=".txt,.md"
+            accept=".txt,.md,.pdf,.docx,.html,.htm,.json"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
