@@ -6,7 +6,7 @@ const TOKEN_PATH = join(process.cwd(), 'data', 'claude-token.txt');
 export function getToken(): string | null {
   try {
     if (!existsSync(TOKEN_PATH)) return null;
-    const token = readFileSync(TOKEN_PATH, 'utf-8').trim();
+    const token = readFileSync(TOKEN_PATH, 'utf-8').replace(/\s+/g, '');
     return token || null;
   } catch {
     return null;
@@ -15,7 +15,8 @@ export function getToken(): string | null {
 
 export function saveToken(token: string): { success: boolean; error?: string } {
   try {
-    const trimmed = token.trim();
+    // Strip all whitespace — tokens can get split across lines when pasted
+    const trimmed = token.replace(/\s+/g, '');
     if (!trimmed) {
       return { success: false, error: 'Token is empty' };
     }
