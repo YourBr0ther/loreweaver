@@ -177,6 +177,7 @@ export interface DashboardStats {
 
 // AI Engine config
 export interface AIConfig {
+  engine: 'claude-code' | 'anthropic-api';
   apiKey?: string;
   model?: string;
 }
