@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { execFile } from 'child_process';
-import { getCredentials, saveCredentials, getAccessToken } from '@/lib/ai/claude-credentials';
+import { getToken, saveToken, isAuthenticated } from '@/lib/ai/claude-credentials';
 
 export async function GET() {
   // Check if claude CLI is installed
@@ -19,10 +19,7 @@ export async function GET() {
     });
   }
 
-  const creds = getCredentials();
-  const accessToken = getAccessToken();
-  const hasToken = !!accessToken;
-
+  const hasToken = isAuthenticated();
   let authenticated = false;
   let error: string | undefined;
 
@@ -35,7 +32,7 @@ export async function GET() {
         {
           timeout: 20_000,
           maxBuffer: 1024 * 1024,
-          env: { ...process.env, ANTHROPIC_API_KEY: accessToken! },
+          env: { ...process.env, CLAUDE_CODE_OAUTH_TOKEN: getToken()! },
         },
         (err) => resolve(!err)
       );
@@ -46,17 +43,16 @@ export async function GET() {
     });
 
     if (!authenticated) {
-      error = 'Token saved but verification failed — it may be expired';
+      error = 'Token verification failed — it may be expired or invalid';
     }
   } else {
-    error = 'No credentials configured';
+    error = 'No token configured';
   }
 
   return Response.json({
     installed: true,
     version,
     authenticated,
-    subscriptionType: creds?.claudeAiOauth?.subscriptionType ?? null,
     error,
   });
 }
@@ -71,7 +67,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = saveCredentials(token);
+  const result = saveToken(token);
 
   if (!result.success) {
     return Response.json(

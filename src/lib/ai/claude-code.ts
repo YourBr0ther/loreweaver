@@ -1,6 +1,6 @@
 import { execFile } from 'child_process';
 import { buildExtractionPrompt } from './prompts';
-import { getAccessToken } from './claude-credentials';
+import { getToken } from './claude-credentials';
 import type { ExtractionResult } from '@/types';
 
 const TIMEOUT_MS = 120_000;
@@ -10,7 +10,7 @@ export async function extractWithClaudeCode(
   existingEntities: string[]
 ): Promise<ExtractionResult> {
   const prompt = buildExtractionPrompt(chunkText, existingEntities);
-  const accessToken = getAccessToken();
+  const token = getToken();
 
   return new Promise((resolve, reject) => {
     const child = execFile(
@@ -21,7 +21,7 @@ export async function extractWithClaudeCode(
         maxBuffer: 1024 * 1024 * 10,
         env: {
           ...process.env,
-          ...(accessToken ? { ANTHROPIC_API_KEY: accessToken } : {}),
+          ...(token ? { CLAUDE_CODE_OAUTH_TOKEN: token } : {}),
         },
       },
       (error, stdout, stderr) => {
@@ -51,16 +51,13 @@ export async function extractWithClaudeCode(
 }
 
 function parseExtractionJson(output: string): ExtractionResult {
-  // Try to find JSON in the output (Claude may wrap it in markdown code blocks)
   let jsonStr = output.trim();
 
-  // Strip markdown code fences if present
   const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (jsonMatch) {
     jsonStr = jsonMatch[1].trim();
   }
 
-  // Try to find a JSON object
   const objStart = jsonStr.indexOf('{');
   const objEnd = jsonStr.lastIndexOf('}');
   if (objStart !== -1 && objEnd !== -1) {
@@ -69,7 +66,6 @@ function parseExtractionJson(output: string): ExtractionResult {
 
   const parsed = JSON.parse(jsonStr);
 
-  // Validate structure
   return {
     entities: Array.isArray(parsed.entities) ? parsed.entities : [],
     relationships: Array.isArray(parsed.relationships) ? parsed.relationships : [],

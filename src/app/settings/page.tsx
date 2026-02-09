@@ -309,11 +309,6 @@ export default function SettingsPage() {
                 <div className="rounded-lg bg-[#6ab4a0]/5 border border-[#6ab4a0]/10 px-3 py-2.5">
                   <p className="text-xs text-[#6ab4a0]/80">
                     Claude CLI is authenticated and ready for entity extraction.
-                    {claudeAuth.subscriptionType && (
-                      <Badge className="ml-2 bg-[#8b7ec8]/10 text-[#8b7ec8] border-none text-[9px] capitalize">
-                        {claudeAuth.subscriptionType}
-                      </Badge>
-                    )}
                   </p>
                 </div>
                 <Button
@@ -333,23 +328,22 @@ export default function SettingsPage() {
             ) : (
               <div className="space-y-3">
                 <p className="text-[11px] text-[#e2e0ef]/30 leading-relaxed">
-                  Paste your Claude credentials token to authenticate the CLI.
-                  On your local machine, run:
+                  Generate a setup token on any machine with Claude Code installed, then paste it here.
                 </p>
-                <code className="block text-[11px] text-[#d4a574] bg-[#0a0a0f] rounded-lg px-3 py-2 font-mono break-all">
-                  security find-generic-password -s &quot;Claude Code-credentials&quot; -a &quot;$(whoami)&quot; -w
+                <code className="block text-[11px] text-[#d4a574] bg-[#0a0a0f] rounded-lg px-3 py-2 font-mono">
+                  claude setup-token
                 </code>
                 <div>
                   <label className="text-[11px] uppercase tracking-wider text-[#e2e0ef]/30 font-medium mb-2 flex items-center gap-1.5">
                     <Key className="w-3 h-3" />
-                    Credentials Token
+                    Setup Token
                   </label>
-                  <textarea
+                  <input
+                    type="password"
                     value={authToken}
                     onChange={(e) => setAuthToken(e.target.value)}
-                    placeholder='{"claudeAiOauth":{"accessToken":"sk-ant-oat01-...","refreshToken":"sk-ant-ort01-..."}}'
-                    rows={3}
-                    className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-xs text-[#e2e0ef] placeholder:text-[#e2e0ef]/10 focus:border-[#8b7ec8]/50 focus:outline-none transition-colors font-mono resize-none"
+                    placeholder="Paste token from claude setup-token..."
+                    className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-xs text-[#e2e0ef] placeholder:text-[#e2e0ef]/15 focus:border-[#8b7ec8]/50 focus:outline-none transition-colors font-mono"
                   />
                 </div>
                 <div className="flex gap-2">

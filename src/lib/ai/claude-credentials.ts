@@ -1,61 +1,35 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
-const CREDS_PATH = join(process.cwd(), 'data', 'claude-credentials.json');
+const TOKEN_PATH = join(process.cwd(), 'data', 'claude-token.txt');
 
-interface ClaudeCredentials {
-  claudeAiOauth: {
-    accessToken: string;
-    refreshToken: string;
-    expiresAt: number;
-    scopes?: string[];
-    subscriptionType?: string;
-    rateLimitTier?: string;
-  };
-  [key: string]: unknown;
-}
-
-export function getCredentials(): ClaudeCredentials | null {
+export function getToken(): string | null {
   try {
-    if (!existsSync(CREDS_PATH)) return null;
-    const raw = readFileSync(CREDS_PATH, 'utf-8');
-    return JSON.parse(raw);
+    if (!existsSync(TOKEN_PATH)) return null;
+    const token = readFileSync(TOKEN_PATH, 'utf-8').trim();
+    return token || null;
   } catch {
     return null;
   }
 }
 
-export function saveCredentials(json: string): { success: boolean; error?: string } {
+export function saveToken(token: string): { success: boolean; error?: string } {
   try {
-    // Validate it's proper JSON with the expected structure
-    const parsed = JSON.parse(json);
-    if (!parsed.claudeAiOauth?.accessToken) {
-      return { success: false, error: 'Missing claudeAiOauth.accessToken' };
+    const trimmed = token.trim();
+    if (!trimmed) {
+      return { success: false, error: 'Token is empty' };
     }
 
     const dir = join(process.cwd(), 'data');
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
-    // Only keep claudeAiOauth — strip mcpOAuth and anything else
-    const filtered = { claudeAiOauth: parsed.claudeAiOauth };
-    writeFileSync(CREDS_PATH, JSON.stringify(filtered, null, 2));
+    writeFileSync(TOKEN_PATH, trimmed);
     return { success: true };
   } catch (e) {
-    return { success: false, error: e instanceof Error ? e.message : 'Invalid JSON' };
+    return { success: false, error: e instanceof Error ? e.message : 'Failed to save token' };
   }
-}
-
-export function getAccessToken(): string | null {
-  const creds = getCredentials();
-  return creds?.claudeAiOauth?.accessToken ?? null;
 }
 
 export function isAuthenticated(): boolean {
-  const creds = getCredentials();
-  if (!creds?.claudeAiOauth?.accessToken) return false;
-  // Check if token is expired (with 5 min buffer)
-  if (creds.claudeAiOauth.expiresAt && creds.claudeAiOauth.expiresAt < Date.now() + 300_000) {
-    return false;
-  }
-  return true;
+  return !!getToken();
 }
