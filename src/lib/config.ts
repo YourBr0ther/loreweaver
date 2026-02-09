@@ -10,7 +10,6 @@ interface AppConfig {
 
 const defaultConfig: AppConfig = {
   ai: {
-    engine: 'claude-code',
     model: 'claude-sonnet-4-5-20250929',
   },
 };
