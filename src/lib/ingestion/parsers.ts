@@ -1,4 +1,3 @@
-import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import { convert } from 'html-to-text';
 
@@ -39,6 +38,8 @@ export async function parseFile(buffer: Buffer, extension: string): Promise<stri
 }
 
 async function parsePdf(buffer: Buffer): Promise<string> {
+  // Lazy import — pdf-parse pulls in pdfjs-dist which requires DOMMatrix at import time
+  const pdfParse = (await import('pdf-parse')).default;
   const data = await pdfParse(buffer);
   return data.text;
 }
